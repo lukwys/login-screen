@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Container, FormControl, TextField, Button, Avatar } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import { authorizeUser } from '../services/login.service';
 
 const IconWrapper = styled(Avatar)`
   background-color: #FF0000;
@@ -18,7 +19,7 @@ const Input = styled(TextField)`
   margin-bottom: 10px;
 `;
 
-export const LoginForm = (): JSX.Element => {
+export const LoginForm = ({setLogged}: {setLogged: (isLogged: boolean) => void}): JSX.Element => {
   let [email, setEmail] = useState<string>('');
   let [password, setPassword] = useState<string>('');
   let [isCorrectPassword, setPasswordStatus] = useState<boolean>(false);
@@ -34,8 +35,10 @@ export const LoginForm = (): JSX.Element => {
     validatePassword();
   }
 
-  const logIn = (): void => {
-    console.log('api call')
+  const logIn = async (): Promise<any> => {
+    const { authToken } = await authorizeUser();
+    localStorage.setItem('authToken', authToken);
+    setLogged(true);
   }
 
   return (
@@ -54,7 +57,7 @@ export const LoginForm = (): JSX.Element => {
           autoFocus
           fullWidth
           variant="outlined"
-          onChange = { (event: React.ChangeEvent<HTMLInputElement>) => setEmail(email = event.target.value) } 
+          onChange = { (event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value) } 
         />
         <Input
           required
@@ -64,7 +67,7 @@ export const LoginForm = (): JSX.Element => {
           fullWidth
           variant="outlined"
           error= { isCorrectPassword }
-          onChange = { (event: React.ChangeEvent<HTMLInputElement>) => setPassword(password = event.target.value) }
+          onChange = { (event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value) }
         />
         <Button
           type="submit"
