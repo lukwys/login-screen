@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Container, FormControl, TextField, Button, Avatar } from '@material-ui/core';
+import { Container, Button, Avatar } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { authorizeUser } from '../services/login.service';
+import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 
 const IconWrapper = styled(Avatar)`
   background-color: #FF0000;
@@ -15,25 +16,22 @@ const Title = styled.h1`
   margin: 10px 0;
 `;
 
-const Input = styled(TextField)`
+const Input = styled(TextValidator)`
   margin-bottom: 10px;
 `;
 
-export const LoginForm = ({setLogged}: {setLogged: (isLogged: boolean) => void}): JSX.Element => {
-  let [email, setEmail] = useState<string>('');
-  let [password, setPassword] = useState<string>('');
-  let [isCorrectPassword, setPasswordStatus] = useState<boolean>(false);
+export const LoginForm = ({ setLogged }: { setLogged: (isLogged: boolean) => void }): JSX.Element => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
-  const validatePassword = (): void => {
-    const passPattern = /^(?=.*\d)(?=.*[A-Z])[0-9a-zA-Z]{8,}$/;
+  useEffect(() => {
+    ValidatorForm.addValidationRule('validatePassword', () => {
+      const passPattern = /^(?=.*\d)(?=.*[A-Z])[0-9a-zA-Z]{8,}$/;
 
-    if (passPattern.test(password)) logIn();
-    else setPasswordStatus(isCorrectPassword = true);
-  }
-
-  const onSubmitClick = (): void => {
-    validatePassword();
-  }
+      if (passPattern.test(password)) return true;
+      return false;
+    })
+  });
 
   const logIn = async (): Promise<any> => {
     const { authToken } = await authorizeUser();
@@ -47,38 +45,39 @@ export const LoginForm = ({setLogged}: {setLogged: (isLogged: boolean) => void})
         <LockOutlinedIcon />
       </IconWrapper>
       <Title>Sign In</Title>
-      <FormControl fullWidth>
-        <Input 
-          required 
-          id="email"
+      <ValidatorForm onSubmit={logIn}>
+        <Input
           label="Email Address"
-          name="email"
           autoComplete="email"
           autoFocus
           fullWidth
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
+          name="email"
+          value={email}
           variant="outlined"
-          onChange = { (event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value) } 
+          validators={['required', 'isEmail']}
+          errorMessages={['this field is required', 'email is not valid']}
         />
         <Input
-          required
-          id="outlined-password-input"
-          label="Password" 
-          type="password"
+          label="Password"
           fullWidth
           variant="outlined"
-          error= { isCorrectPassword }
-          onChange = { (event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value) }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
+          name="password"
+          type="password"
+          validators={['validatePassword', 'required']}
+          errorMessages={['this field is required']}
+          value={password}
         />
         <Button
           type="submit"
           fullWidth
           variant="contained"
           color="primary"
-          onClick = { () => onSubmitClick() }
         >
           Sign In
         </Button>
-      </FormControl>
+      </ValidatorForm>
     </Container>
   )
 }
