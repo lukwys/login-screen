@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { LoginForm } from './components/LoginForm'
+import { Menu } from './components/Menu';
+import styled from 'styled-components';
+
+const Title = styled.h1`
+  text-align: center;
+`;
 
 function App() {
   const [isLogged, setLogged] = useState<boolean>(false);
@@ -8,11 +14,16 @@ function App() {
     if(localStorage.getItem('authToken')) setLogged(true);
   }, []);
 
-  if(isLogged) return <p>you are logged in</p>
 
   return (
     <div className="App">
-      <LoginForm setLogged={setLogged}/>
+      {!isLogged ? 
+        <LoginForm setLogged={setLogged}/> :
+        <React.Fragment>
+          <Menu setLogged={setLogged}/>
+          <Title>You are logged in</Title>
+        </React.Fragment>
+      }
     </div>
   );
 }
