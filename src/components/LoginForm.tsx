@@ -20,9 +20,16 @@ const Input = styled(TextValidator)`
   margin-bottom: 10px;
 `;
 
+const ErrorMessage = styled.p`
+  font-size: 14px;
+  color: red;
+  text-align: center;
+`
+
 export const LoginForm = ({ setLogged }: { setLogged: (isLogged: boolean) => void }): JSX.Element => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     ValidatorForm.addValidationRule('validatePassword', () => {
@@ -34,11 +41,16 @@ export const LoginForm = ({ setLogged }: { setLogged: (isLogged: boolean) => voi
   });
 
   const logIn = async (): Promise<any> => {
-    const { authToken } = await authorizeUser();
-    localStorage.setItem('authToken', authToken);
-    setLogged(true);
+    try {
+      const { authToken } = await authorizeUser({ email, password });
+      localStorage.setItem('authToken', authToken);
+      setError(false);
+      setLogged(true);
+    } catch (error) {
+      setError(true);
+    }
   }
-
+  
   return (
     <Container maxWidth="xs">
       <IconWrapper>
@@ -69,6 +81,7 @@ export const LoginForm = ({ setLogged }: { setLogged: (isLogged: boolean) => voi
           errorMessages={['this field is required']}
           value={password}
         />
+        {error? <ErrorMessage>Wrong email or password</ErrorMessage> : ''}
         <Button
           type="submit"
           fullWidth
