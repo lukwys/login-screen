@@ -1,7 +1,7 @@
 import { apiService } from './index';
 
-const authorizeUser = async () => {
-  const response = await apiService.get('/');
+const authorizeUser = async (data) => {
+  const response = await apiService.post('/', data);
   const results = response.data;
   return results;
 }
